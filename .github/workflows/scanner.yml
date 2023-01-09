@@ -1,0 +1,15 @@
+name: veinmind-tools-remote-scan
+on:
+  repository_dispatch:
+    types: [ veinmind-tools ]
+
+jobs:
+  scan:
+    name: ${{ github.event.client_payload.image }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: chaitin/veinmind-action@main
+        if: ${{ github.event.client_payload.image != '' }}
+        with:
+          scan-action: scan-registry image
+          image-ref: ${{ github.event.client_payload.image }}
