@@ -9,7 +9,14 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: chaitin/veinmind-action@main
+        name: scan
         if: ${{ github.event.client_payload.image != '' }}
         with:
           scan-action: scan-registry image
           image-ref: ${{ github.event.client_payload.image }}
+      - name: upload-result
+        if: ${{ github.event.client_payload.imageId != '' && github.event.client_payload.ep != ''  && github.event.client_payload.ak != '' && github.event.client_payload.sk != ''  }}
+        run: |
+          wget http://gosspublic.alicdn.com/ossutil/1.7.14/ossutil64 && chmod 755 ossutil64
+          ./ossutil64 config -e ${{github.event.client_payload.ep}} -i ${{github.event.client_payload.ak}} -k ${{github.event.client_payload.sk}}
+          ./ossutil64 cp report.json oss://veinmind-cache/${{github.event.client_payload.imageId}}.json
