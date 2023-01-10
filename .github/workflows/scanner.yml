@@ -1,22 +1,33 @@
-name: veinmind-tools-remote-scan
+name: veinmind-tools-scan
 on:
-  repository_dispatch:
-    types: [ veinmind-tools ]
+  workflow_dispatch:
+    inputs:
+      image:
+        description: 'scan image'
+        required: true
+      imageId:
+        description: 'scan image id'
+      ep:
+        description: 'oss entrypoint'
+      ak:
+        description: 'oss accessKey'
+      sk:
+        description: 'oss accessKeySecret'
 
 jobs:
   scan:
-    name: ${{ github.event.client_payload.image }}
+    name: ${{ inputs.image }}
     runs-on: ubuntu-latest
     steps:
       - uses: chaitin/veinmind-action@main
         name: scan
-        if: ${{ github.event.client_payload.image != '' }}
+        if: ${{ inputs.image != '' }}
         with:
           scan-action: scan-registry image
-          image-ref: ${{ github.event.client_payload.image }}
+          image-ref: ${{ inputs.image }}
       - name: upload-result
-        if: ${{ github.event.client_payload.imageId != '' && github.event.client_payload.ep != ''  && github.event.client_payload.ak != '' && github.event.client_payload.sk != ''  }}
+        if: ${{ inputs.imageId != '' && inputs.ep != ''  && inputs.ak != '' && inputs.sk != ''  }}
         run: |
           wget http://gosspublic.alicdn.com/ossutil/1.7.14/ossutil64 && chmod 755 ossutil64
-          ./ossutil64 config -e ${{github.event.client_payload.ep}} -i ${{github.event.client_payload.ak}} -k ${{github.event.client_payload.sk}}
-          ./ossutil64 cp report.json oss://veinmind-cache/${{github.event.client_payload.imageId}}.json
+          ./ossutil64 config -e ${{inputs.ep}} -i ${{inputs.ak}} -k ${{inputs.sk}}
+          ./ossutil64 cp report.json oss://veinmind-cache/${{inputs.imageId}}.json
